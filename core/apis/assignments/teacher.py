@@ -2,7 +2,7 @@ from flask import Blueprint
 from core import db
 from core.apis import decorators
 from core.apis.responses import APIResponse
-from core.models.assignments import Assignment
+from core.models.assignments import Assignment,AssignmentStateEnum
 
 from .schema import AssignmentSchema, AssignmentGradeSchema
 teacher_assignments_resources = Blueprint('teacher_assignments_resources', __name__)
@@ -24,11 +24,30 @@ def grade_assignment(p, incoming_payload):
     """Grade an assignment"""
     grade_assignment_payload = AssignmentGradeSchema().load(incoming_payload)
 
+    # Retrieve the assignment by ID
+    assignment = Assignment.get_by_id(grade_assignment_payload.id)
+
+    # Ensure the assignment exists
+    if assignment is None:
+        return APIResponse.respond_error(message='Assignment not found', status_code=404)
+
+    # Check if the assignment was submitted to the grading teacher
+    if assignment.teacher_id != p.teacher_id and assignment.teacher_id :
+        return APIResponse.respond_error(message='Cannot grade an assignment not submitted to you', status_code=400)
+    if assignment.state != AssignmentStateEnum.SUBMITTED:
+        return APIResponse.respond_error(message='Only a submitted assignment can be graded', status_code=400)
+    
+
+    # Grade the assignment
     graded_assignment = Assignment.mark_grade(
         _id=grade_assignment_payload.id,
         grade=grade_assignment_payload.grade,
         auth_principal=p
     )
     db.session.commit()
+
+    # Dump the graded assignment data
     graded_assignment_dump = AssignmentSchema().dump(graded_assignment)
+    
     return APIResponse.respond(data=graded_assignment_dump)
+

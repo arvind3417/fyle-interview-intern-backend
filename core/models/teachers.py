@@ -11,3 +11,9 @@ class Teacher(db.Model):
 
     def __repr__(self):
         return '<Teacher %r>' % self.id
+# core/models/teachers.py
+
+    @classmethod
+    def get_all_teachers(cls):
+        """Retrieve all teachers."""
+        return cls.query.all()

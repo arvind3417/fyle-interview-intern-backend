@@ -42,7 +42,7 @@ def test_grade_assignment_cross(client, h_teacher_2):
     assert response.status_code == 400
     data = response.json
 
-    assert data['error'] == 'FyleError'
+    assert data['message'] == 'Cannot grade an assignment not submitted to you'
 
 
 def test_grade_assignment_bad_grade(client, h_teacher_1):
@@ -80,7 +80,7 @@ def test_grade_assignment_bad_assignment(client, h_teacher_1):
     assert response.status_code == 404
     data = response.json
 
-    assert data['error'] == 'FyleError'
+    assert data['message'] == 'Assignment not found'
 
 
 def test_grade_assignment_draft_assignment(client, h_teacher_1):
@@ -91,7 +91,7 @@ def test_grade_assignment_draft_assignment(client, h_teacher_1):
         '/teacher/assignments/grade',
         headers=h_teacher_1
         , json={
-            "id": 2,
+            "id": 6,
             "grade": "A"
         }
     )
@@ -99,4 +99,4 @@ def test_grade_assignment_draft_assignment(client, h_teacher_1):
     assert response.status_code == 400
     data = response.json
 
-    assert data['error'] == 'FyleError'
+    assert data['message'] == 'Only a submitted assignment can be graded'
