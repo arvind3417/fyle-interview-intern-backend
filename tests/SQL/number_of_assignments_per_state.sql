@@ -1,1 +1,3 @@
--- Write query to get number of assignments for each state
+SELECT UPPER(state) AS state, COUNT(*) AS count
+FROM assignments
+GROUP BY state;

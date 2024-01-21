@@ -46,16 +46,8 @@ class Assignment(db.Model):
 
     @classmethod
     def upsert(cls, assignment_new: 'Assignment'):
-        if assignment_new.id is not None:
-            assignment = Assignment.get_by_id(assignment_new.id)
-            assertions.assert_found(assignment, 'No assignment with this id was found')
-            assertions.assert_valid(assignment.state == AssignmentStateEnum.DRAFT,
-                                    'only assignment in draft state can be edited')
-
-            assignment.content = assignment_new.content
-        else:
-            assignment = assignment_new
-            db.session.add(assignment_new)
+        assignment = assignment_new
+        db.session.add(assignment_new)
 
         db.session.flush()
         return assignment
@@ -94,13 +86,7 @@ class Assignment(db.Model):
 
     @classmethod
     def get_assignments_by_teacher(cls, teacher_id):
-        return cls.filter(cls.teacher_id == teacher_id, cls.state == AssignmentStateEnum.SUBMITTED).all()
-
-    @classmethod
-    def get_assignments_for_principal(cls, principal_id):
-        """Retrieve assignments based on principal permissions."""
-        return cls.query.filter(cls.principal_id==principal_id).all()
-    
+        return cls.filter(cls.teacher_id == teacher_id, cls.state == AssignmentStateEnum.SUBMITTED).all()    
     #models/assignments.py
 
     @classmethod
@@ -111,22 +97,22 @@ class Assignment(db.Model):
 
 # core/models/assignments.py
 
-    @classmethod
-    def grade_or_regrade_assignment(cls, _id, grade, auth_principal):
-        """
-        Grade or re-grade an assignment for the principal.
-        """
-        # Implement your logic here to grade or re-grade an assignment based on principal permissions
+    # @classmethod
+    # def grade_or_regrade_assignment(cls, _id, grade, auth_principal):
+    #     """
+    #     Grade or re-grade an assignment for the principal.
+    #     """
+    #     # Implement your logic here to grade or re-grade an assignment based on principal permissions
 
-        # This is just a placeholder logic, you need to modify it based on your actual requirements
-        assignment = cls.get_by_id(_id)
-        # Check if the assignment is associated with the principal
-        if assignment.teacher_id == auth_principal.principal_id:
-            assignment.grade = grade
-            assignment.state = AssignmentStateEnum.GRADED
-            db.session.flush()
-            return assignment
-        else:
-            # Handle the case where the principal does not have permission to grade this assignment
-            # You may raise an exception or return an appropriate response
-            raise Exception("Principal does not have permission to grade this assignment")
+    #     # This is just a placeholder logic, you need to modify it based on your actual requirements
+    #     assignment = cls.get_by_id(_id)
+    #     # Check if the assignment is associated with the principal
+    #     if assignment.teacher_id == auth_principal.principal_id:
+    #         assignment.grade = grade
+    #         assignment.state = AssignmentStateEnum.GRADED
+    #         db.session.flush()
+    #         return assignment
+    #     else:
+    #         # Handle the case where the principal does not have permission to grade this assignment
+    #         # You may raise an exception or return an appropriate response
+    #         raise Exception("Principal does not have permission to grade this assignment")
