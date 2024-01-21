@@ -28,17 +28,23 @@ def upsert_assignment(p, incoming_payload):
     # Check for null content in the payload
     if 'content' in incoming_payload and incoming_payload['content'] is None:
         return APIResponse.respond_error('Content cannot be null', status_code=400)
+    assignment_id = incoming_payload.get('id')
+    assignment_content = incoming_payload.get('content')
+    if assignment_id:
+        final_assignment = Assignment.edit(
+            _id=assignment_id,
+            content=assignment_content
+        )
+    else:
+        try:
+            assignment = AssignmentSchema().load(incoming_payload)
+            assignment.student_id = p.student_id
+            final_assignment = Assignment.upsert(assignment)
+        except ValidationError as e:
+            return APIResponse.respond_error(str(e), status_code=400)
 
-    try:
-        assignment = AssignmentSchema().load(incoming_payload)
-    except ValidationError as e:
-        return APIResponse.respond_error(str(e), status_code=400)
-
-    assignment.student_id = p.student_id
-
-    upserted_assignment = Assignment.upsert(assignment)
     db.session.commit()
-    upserted_assignment_dump = AssignmentSchema().dump(upserted_assignment)
+    upserted_assignment_dump = AssignmentSchema().dump(final_assignment)
     return APIResponse.respond(data=upserted_assignment_dump)
 
 

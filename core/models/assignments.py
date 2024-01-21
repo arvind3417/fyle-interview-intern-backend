@@ -51,6 +51,13 @@ class Assignment(db.Model):
 
         db.session.flush()
         return assignment
+    
+    @classmethod
+    def edit(cls, _id, content):
+        assignment = Assignment.get_by_id(_id)
+        assignment.content = content
+        db.session.flush()
+        return assignment
 
     @classmethod
     def submit(cls, _id, teacher_id, auth_principal: AuthPrincipal):
